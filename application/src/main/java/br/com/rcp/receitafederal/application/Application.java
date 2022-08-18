@@ -28,28 +28,33 @@ public class Application implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        if (args.length < 1) {
-            throw new RuntimeException("At least one argument is required!");
+    public void run(String... args) {
+        try {
+            if (args.length < 1) {
+                throw new RuntimeException("At least one argument is required!");
+            }
+
+            if (args.length > 1) {
+                throw new RuntimeException("Only one argument permited!");
+            }
+
+            String file = args[0];
+            String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String out;
+
+            if (file.contains(".")) {
+                int at = file.indexOf(".");
+                out = file.substring(0, at) + "_" + date + file.substring(at);
+            } else {
+                out = file + "_" + date;
+            }
+
+            List<Account> result = fileProcessorService.process(args[0]);
+            System.out.println(result.toString());
+            writerService.write(out, result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (args.length > 1) {
-            throw new RuntimeException("Only one argument permited!");
-        }
-
-        String file = args[0];
-        String out = "";
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-
-        if (file.contains(".")) {
-            int at = file.indexOf(".");
-            out = file.substring(0, at) + "_" + date + file.substring(at);
-        } else {
-            out = file + "_" + date;
-        }
-
-        List<Account> result = fileProcessorService.process(args[0]);
-        System.out.println(result.toString());
-        writerService.write(out, result);
     }
 }
